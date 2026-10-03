@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+  <html lang="zh-TW">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan Stock Screener 台灣股市選股器</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+header { text-align: center; margin-bottom: 25px; }
+h1 { color: #1e293b; margin-bottom: 5px; }
+.container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.control-group { display: flex; flex-direction: column; }
+label { font-weight: 600; font-size: 14px; margin-bottom: 5px; color: #475569; }
+input, select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+th { background: #f8fafc; font-weight: 600; color: #475569; }
+.positive { color: #dc2626; font-weight: 600; }
+.negative { color: #16a34a; font-weight: 600; }
+</style>
+  </head>
+  <body>
+  <div class="container">
+  <header>
+  <h1>📈 台灣股選股器 (Taiwan Stock Screener)</h1>
+  <p>即時篩選與分析台股優質標的</p>
+  </header>
+  <div class="controls">
+  <div class="control-group">
+  <label>股票號/名稱</label>
+  <input type="text" id="search" placeholder="例如：2330 或 台積電" oninput="filterStocks()">
+  </div>
+  <div class="control-group">
+  <label>產業類</label>
+  <select id="industry" onchange="filterStocks()">
+  <option value="ALL">全部產業</option>
+  <option value="半導體">半導體</option>
+  <option value="金融保險">金保險</option>
+  <option value="電腦及週">電腦及週邊</option>
+  <option value="航業">航運業</option>
+  </select>
+  </div>
+  <div class="control-group">
+  <label>最高本益比 (P/E)</label>
+  <input type="number" id="maxPE" placeholder="例如：20" oninput="filterStocks()">
+  </div>
+  <div class="control-group">
+  <label>最低殖利率 (%)</label>
+  <input type="number" id="minYield" placeholder="例如：4" oninput="filterStocks()">
+  </div>
+  </div>
+  <table>
+  <thead>
+  <tr>
+  <th>代號</th><th>稱</th><th>產業</th><th>股價</th><th>漲跌</th><th>本益比</th><th>殖利率</th>
+  </tr>
+  </thead>
+  <tbody id="stockTable"></tbody>
+  </table>
+  </div>
+  <script>
+  const stocks = [
+{ code: '2330', name: '台積電', industry: '半導體', price: 980, change: '+2.0%', pe: 24.5, yield: 1.8 },
+  { code: '2454', name: '聯發科', industry: '半導體', price: 1250, change: '+1.5%', pe: 18.2, yield: 4.2 },
+{ code: '2317', name: '鴻海', industry: '電腦及週邊', price: 185, change: '-0.5%', pe: 15.1, yield: 3.8 },
+{ code: '2881', name: '富邦金', industry: '金融保險', price: 78, change: '+0.8%', pe: 10.4, yield: 5.1 },
+{ code: '2882', name: '國泰金', industry: '金融保險', price: 58, change: '+0.3%', pe: 11.2, yield: 4.8 },
+{ code: '2603', name: '長榮', industry: '航運業', price: 192, change: '+3.2%', pe: 8.5, yield: 6.5 },
+{ code: '2382', name: '廣達', industry: '電腦及週邊', price: 290, change: '+1.2%', pe: 19.8, yield: 3.5 }
+];
+function render(data) {
+  document.getElementById('stockTable').innerHTML = data.map(s => `
+<tr>
+<td><b>${s.code}</b></td><td>${s.name}</td><td>${s.industry}</td>
+<td>$${s.price}</td><td class="${s.change.startsWith('+')?'positive':'negative'}">${s.change}</td>
+<td>${s.pe}</td><td>${s.yield}%</td>
+</tr>`).join('');
+}
+function filterStocks() {
+  const search = document.getElementById('search').value.toLowerCase();
+const ind = document.getElementById('industry').value;
+const maxPE = parseFloat(document.getElementById('maxPE').value) || Infinity;
+const minYield = parseFloat(document.getElementById('minYield').value) || 0;
+const filtered = stocks.filter(s => {
+const matchSearch = s.code.includes(search) || s.name.includes(search);
+const matchInd = ind === 'ALL' || s.industry === ind;
+const matchPE = s.pe <= maxPE;
+const matchYield = s.yield >= minYield;
+return matchSearch && matchInd && matchPE && matchYield;
+});
+render(filtered);
+}
+render(stocks);
+</script>
+</body>
+</html>
