@@ -1,7 +1,121 @@
 <!DOCTYPE html>
   <html lang="zh-TW">
   <head>
-  <meta charset="UTF-8">
+  <meta charse<!DOCTYPE html>
+    <html lang="zh-TW">
+      <head>
+          <meta charset="UTF-8"><title>台股法人目標選股器</title>
+        <script>const s=document.createElement('script');s.src='https://'+'cdn.'+'tailwindcss.'+'com';document.head.appendChild(s);</script>
+      </head>
+    <body class="bg-slate-50 p-6 font-sans">
+      <div class="max-w-6xl mx-auto">
+          <header class="mb-6 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <div>
+                          <h1 class="text-2xl font-bold text-slate-900">📈 台法人目標價選股器</h1>h1>
+                          <p class="text-xs text-slate-500 mt-1">剔除最高與最低極端值 · 數據基準日：2026年10月02收盤</p>p>
+                </div>
+                  <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-medium border border-emerald-200">
+                             2026年10月最新行情已校正
+                  </span>span>
+          </header>header>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-wrap gap-2 items-center shadow-sm">
+                    <span class="text-sm font-semibold text-slate-700 mr-2">股價區間：</span>span>
+                    <button onclick="filter('ALL')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white" data-f="ALL">全部</button>button>
+                    <button onclick="filter('BELOW_100')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="BELOW_100">100元以下</button>button>
+                    <button onclick="filter('100_500')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="100_500">100~500元</button>button>
+                    <button onclick="filter('500_2000')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="500_2000">500~2000元</button>button>
+                    <button onclick="filter('ABOVE_2000')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="ABOVE_2000">2000元以上</button>button>
+            </div>
+
+            <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+        <script>
+              const STOCKS = [
+                {sym:"2330", name:"台積電", price:2500, tier:"ABOVE_2000", reports:[
+                  {b:"高盛", d:"09-28", r:"買進", t:3200}, {b:"小摩", d:"09-27", r:"加碼", t:3150},
+                  {b:"美", d:"09-25", r:"買進", t:3100}, {b:"大摩", d:"09-22", r:"優於大盤", t:3000},
+                  {b:"富邦", d:"09-15", r:"增持", t:2950}, {b:"野村", d:"09-10", r:"中立", t:2750}
+                        ]},
+                {sym:"2454", name:"聯發", price:4950, tier:"ABOVE_2000", reports:[
+                  {b:"銀", d:"09-28", r:"買進", t:6500}, {b:"高盛", d:"09-25", r:"買進", t:6200},
+                  {b:"美林", d:"09-22", r:"買進", t:6100}, {b:"大摩", d:"09-18", r:"優於大盤", t:5900},
+                  {b:"統", d:"09-10", r:"中立", t:5400}
+                        ]},
+                {sym:"2308", name:"台達電", price:1885, tier:"500_2000", reports:[
+                  {b:"大摩", d:"09-26", r:"優於大盤", t:2400}, {b:"凱基", d:"09-22", r:"增持", t:2320},
+                  {b:"高盛", d:"09-18", r:"買進", t:2350}, {b:"統一", d:"09-12", r:"中立", t:2100}
+                        ]},
+                {sym:"2382", name:"廣達", price:332, tier:"100_500", reports:[
+                  {b:"花旗", d:"09-28", r:"買進", t:440}, {b:"大摩", d:"09-25", r:"優於大盤", t:425},
+                  {b:"高盛", d:"09-20", r:"買進", t:420}, {b:"永豐", d:"09-08", r:"中立", t:370}
+                        ]},
+                {sym:"2317", name:"鴻海", price:251, tier:"100_500", reports:[
+                  {b:"高盛", d:"09-28", r:"買進", t:330}, {b:"大摩", d:"09-25", r:"優於大盤", t:320},
+                  {b:"瑞銀", d:"09-22", r:"買進", t:315}, {b:"元大", d:"09-18", r:"買進", t:305},
+                  {b:"美", d:"09-06", r:"中立", t:275}
+                        ]},
+                {sym:"2609", name:"陽明", price:68.5, tier:"BELOW_100", reports:[
+                  {b:"元大", d:"09-24", r:"買進", t:88}, {b:"凱基", d:"09-18", r:"增", t:85},
+                  {b:"統一", d:"09-12", r:"買進", t:82}, {b:"富邦", d:"09-06", r:"中立", t:75}
+                        ]}
+                    ];
+
+              function calcTarget(r){
+                      const ts = r.map(x=>x.t);
+                      if(ts.length<3) return (ts.reduce((a,b)=>a+b,0)/ts.length).toFixed(0);
+                              return (ts.sort((a,b)=>a-b).slice(1,-1).reduce((a,b)=>a+b,0)/(ts.length-2)).toFixed(0);
+              }
+
+              let curFilter = 'ALL';
+              function filter(f){
+                      curFilter = f;
+                      document.querySelectorAll('.btn').forEach(b => {
+                                b.className = b.dataset.f === f ? 'btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white' : 'btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700';
+                      });
+                      render();
+              }
+
+              function render(){
+                      const c = document.getElementById('list');
+                      c.innerHTML = '';
+                      STOCKS.filter(s => curFilter==='ALL' || s.tier===curFilter).forEach(s => {
+                                const target = calcTarget(s.reports);
+                                const upside = (((target - s.price)/s.price)*100).toFixed(1);
+                                const card = document.createElement('div');
+                                card.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm';
+                                card.innerHTML = `
+                                          <div class="flex justify-between items-start mb-3">
+                                                      <div>
+                                                                    <span class="text-lg font-bold text-slate-900">${s.name} (${s.sym})</span>
+                                                                                  <div class="text-xs text-blue-600 font-medium mt-1">近30天 ${s.reports.length} 份機構報告</div>
+                                                                                              </div>
+                                                                                                          <div class="text-right">
+                                                                                                                        <span class="text-xs text-slate-400 block">預期潛在漲幅</span>
+                                                                                                                                      <span class="text-lg font-bold text-rose-600 font-mono">+${upside}%</span>
+                                                                                                                                                  </div>
+                                                                                                                                                            </div>
+                                                                                                                                                                      <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-sm">
+                                                                                                                                                                                  <div><span class="text-xs text-slate-400 block">現價 (10/02收盤)</span><b class="text-slate-800">NT$ ${s.price}</b></div>
+                                                                                                                                                                                              <div><span class="text-xs text-slate-400 block">去極平均目標價</span><b class="text-blue-600">NT$ ${target}</b></div>
+                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                  <button onclick="document.getElementById('r-${s.sym}').classList.toggle('hidden')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition">
+                                                                                                                                                                                                                              查看各大券商目標價細 ▼
+                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                  <div id="r-${s.sym}" class="hidden mt-2 pt-2 border-t border-slate-100 text-xs space-y-1">
+                                                                                                                                                                                                                                                              ${s.reports.map(x=>`<div class="flex justify-between py-1 text-slate-600"><span>${x.b} (${x.d})</span><span>${x.r} · <strong>NT$ ${x.t}</strong></span></div>`).join('')}
+                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                `;
+                                c.appendChild(card);
+                      });
+              }
+              render();
+        </script>
+    </body>body>
+    </html>html>
+                </div></title>
+      </head>t="UTF-8">
   <meta name="viewport" content=<!DOCTYPE html>
     <html lang="zh-TW">
       <head>
