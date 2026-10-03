@@ -1,822 +1,251 @@
 <!DOCTYPE html>
-<html lang="zh-TW"><!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>台股法人目價選股系統</title>
-    <script>
-        const s = document.createElement('script');
-        s.src = 'https://' + 'cdn.' + 'tailwindcss' + '.com';
-        document.head.appendChild(s);
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = 'https://' + 'fonts.' + 'googleapis' + '.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap';
-        document.head.appendChild(l);
-    </script>
-    <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
-      </style>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台股法人目標價選股系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; }
+  </style>
+</head>
 <body class="bg-slate-50 min-h-screen text-slate-800 p-4 sm:p-6 lg:p-8">
-  <div class="max-w-6xl mx-auto space-y-6">
-      <header class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <div id="root" class="max-w-6xl mx-auto space-y-6"></div>
+
+  <script>
+    const STOCKS = [
+      {
+        sym: "2330", name: "台積電", price: 2500, tier: "ABOVE_2000",
+        reports: [
+          { b: "高盛證券", d: "2026-09-28", r: "買進", t: 3200 },
+          { b: "摩根大通", d: "2026-09-27", r: "加碼", t: 3150 },
+          { b: "美銀證券", d: "2026-09-25", r: "買進", t: 3100 },
+          { b: "摩根士丹利", d: "2026-09-22", r: "優於大盤", t: 3000 },
+          { b: "瑞銀證券", d: "2026-09-20", r: "買進", t: 3050 },
+          { b: "富邦投顧", d: "2026-09-15", r: "增加持股", t: 2950 },
+          { b: "野村證券", d: "2026-09-10", r: "中立", t: 2750 }
+        ]
+      },
+      {
+        sym: "2454", name: "聯發科", price: 4950, tier: "ABOVE_2000",
+        reports: [
+          { b: "瑞銀證券", d: "2026-09-28", r: "買進", t: 6500 },
+          { b: "高盛證券", d: "2026-09-25", r: "買進", t: 6200 },
+          { b: "美林證券", d: "2026-09-22", r: "買進", t: 6100 },
+          { b: "摩根士丹利", d: "2026-09-18", r: "優於大盤", t: 5900 },
+          { b: "凱基投顧", d: "2026-09-15", r: "增加持股", t: 5800 },
+          { b: "統一投顧", d: "2026-09-10", r: "中立", t: 5400 }
+        ]
+      },
+      {
+        sym: "2308", name: "台達電", price: 1885, tier: "500_2000",
+        reports: [
+          { b: "摩根士丹利", d: "2026-09-26", r: "優於大盤", t: 2400 },
+          { b: "凱基投顧", d: "2026-09-22", r: "增加持股", t: 2320 },
+          { b: "高盛證券", d: "2026-09-18", r: "買進", t: 2350 },
+          { b: "統一投顧", d: "2026-09-12", r: "中立", t: 2100 }
+        ]
+      },
+      {
+        sym: "2382", name: "廣達", price: 332, tier: "100_500",
+        reports: [
+          { b: "花旗環球", d: "2026-09-28", r: "買進", t: 440 },
+          { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 425 },
+          { b: "高盛證券", d: "2026-09-20", r: "買進", t: 420 },
+          { b: "富邦投顧", d: "2026-09-14", r: "增加持股", t: 400 },
+          { b: "永豐投顧", d: "2026-09-08", r: "中立", t: 370 }
+        ]
+      },
+      {
+        sym: "2317", name: "鴻海", price: 251, tier: "100_500",
+        reports: [
+          { b: "高盛證券", d: "2026-09-28", r: "買進", t: 330 },
+          { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 320 },
+          { b: "瑞銀證券", d: "2026-09-22", r: "買進", t: 315 },
+          { b: "元大投顧", d: "2026-09-18", r: "買進", t: 305 },
+          { b: "富邦投顧", d: "2026-09-12", r: "增加持股", t: 295 },
+          { b: "美銀證券", d: "2026-09-06", r: "中立", t: 275 }
+        ]
+      },
+      {
+        sym: "2609", name: "陽明", price: 68.5, tier: "BELOW_100",
+        reports: [
+          { b: "元大投顧", d: "2026-09-24", r: "買進", t: 88 },
+          { b: "凱基投顧", d: "2026-09-18", r: "增加持股", t: 85 },
+          { b: "統一投顧", d: "2026-09-12", r: "買進", t: 82 },
+          { b: "富邦投顧", d: "2026-09-06", r: "中立", t: 75 }
+        ]
+      }
+    ];
+
+    function calcTrimmedMean(targets) {
+      if (!targets.length) return 0;
+      if (targets.length < 3) return Math.round(targets.reduce((a, b) => a + b, 0) / targets.length);
+      const sorted = [...targets].sort((a, b) => a - b);
+      const trimmed = sorted.slice(1, -1);
+      return Math.round(trimmed.reduce((a, b) => a + b, 0) / trimmed.length);
+    }
+
+    let currentPriceFilter = 'ALL';
+    let currentMinUpside = 20;
+    let searchQuery = '';
+
+    function buildLayout() {
+      const root = document.getElementById('root');
+      root.innerHTML = `
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md shadow-blue-500/20">📈</div>
             <div>
-                      <h1 class="text-xl font-bold text-slate-900 tracking-tight">📈 台股法人目標價選股器</h1>h1>
-                      <p class="text-xs text-slate-500">剔除最高與最低極端值 · 數據基準日：2026年10月02日收盤</p>p>
+              <div class="text-xl font-bold text-slate-900 tracking-tight">台股法人目標價選股器</div>
+              <div class="text-xs text-slate-500">剔除最高與最低極端值 · 數據基準日：2026年10月02日收盤</div>
             </div>
-              <div class="text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 font-medium">
-                        ● 近 30 天券商研究報告共識追蹤
-              </div>
-      </header>header>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 font-medium self-start md:self-auto">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>近 30 天券商研究報告共識追蹤</span>
+          </div>
+        </div>
 
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div>
-                          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">股價區間：</label>label>
-                          <div class="flex flex-wrap gap-2" id="price-filters">
-                                      <button onclick="setPriceFilter('ALL')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm" data-p="ALL">全部價位</button>button>
-                                      <button onclick="setPriceFilter('BELOW_100')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="BELOW_100">100元以下</button>button>
-                                      <button onclick="setPriceFilter('100_500')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="100_500">100 ~ 500</button>button>
-                                      <button onclick="setPriceFilter('500_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="500_2000">500 ~ 2000元</button>button>
-                                      <button onclick="setPriceFilter('ABOVE_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="ABOVE_2000">2000元以上</button>button>
-                          </div>
-                </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+          <div>
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">股價區間：</div>
+            <div class="flex flex-wrap gap-2" id="price-filters"></div>
+          </div>
 
-                <div class="pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div class="flex items-center space-x-2">
-                                      <span class="text-xs font-bold text-slate-500">預期漲幅門檻：</span>span>
-                                      <select id="upside-filter" onchange="render()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none">
-                                                    <option value="0">不設限 (全部列出)</option>option>
-                                                    <option value="15">15% 以上</option>option>
-                                                    <option value="20" selected>20% 以上 (精選強勢)</option>option>
-                                                    <option value="25">25% 以上</option>option>
-                                      </select>select>
-                          </div>
+          <div class="pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-slate-500">預期漲幅門檻：</span>
+              <select id="upside-filter" onchange="onUpsideChange(this.value)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none">
+                <option value="0">不設限 (全部列出)</option>
+                <option value="15">15% 以上</option>
+                <option value="20" selected>20% 以上 (精選強勢)</option>
+                <option value="25">25% 以上</option>
+              </select>
+            </div>
 
-                          <div class="flex items-center space-x-2">
-                                      <span class="text-xs font-bold text-slate-500">搜尋：</span>span>
-                                      <input id="search-input" oninput="render()" placeholder="代號或名稱 (如 2330 / 聯科)" class="border border-slate-200 rounded-lg px-3 py-1 text-xs w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-                          </div>
-                </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-bold text-slate-500">搜尋：</span>
+              <input id="search-input" oninput="onSearchChange(this.value)" placeholder="代號或名稱 (如 2330 / 聯發科)" class="border border-slate-200 rounded-lg px-3 py-1 text-xs w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            </div>
+          </div>
         </div>
 
         <div id="stock-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-  </div>
+      `;
+      renderPriceFilterButtons();
+      renderCards();
+    }
 
-    <script>
-          const STOCKS = [
-            {
-                      sym: "2330", name: "台積電", price: 2500, tier: "ABOVE_2000",
-                      reports: [
-                        { b: "高盛證券", d: "2026-09-28", r: "買進", t: 3200 },
-                        { b: "根大通", d: "2026-09-27", r: "加碼", t: 3150 },
-                        { b: "美銀證券", d: "2026-09-25", r: "買進", t: 3100 },
-                        { b: "摩根士丹利", d: "2026-09-22", r: "優於大", t: 3000 },
-                        { b: "瑞銀證券", d: "2026-09-20", r: "買進", t: 3050 },
-                        { b: "富邦投顧", d: "2026-09-15", r: "增加持股", t: 2950 },
-                        { b: "野村證券", d: "2026-09-10", r: "中立", t: 2750 }
-                                ]
-            },
-            {
-                      sym: "2454", name: "聯發科", price: 4950, tier: "ABOVE_2000",
-                      reports: [
-                        { b: "瑞銀證券", d: "2026-09-28", r: "買進", t: 6500 },
-                        { b: "高盛券", d: "2026-09-25", r: "買進", t: 6200 },
-                        { b: "美林證券", d: "2026-09-22", r: "買進", t: 6100 },
-                        { b: "摩根士丹利", d: "2026-09-18", r: "優盤", t: 5900 },
-                        { b: "凱基投顧", d: "2026-09-15", r: "增加股", t: 5800 },
-                        { b: "統一投顧", d: "2026-09-10", r: "中立", t: 5400 }
-                                ]
-            },
-            {
-                      sym: "2308", name: "台達電", price: 1885, tier: "500_2000",
-                      reports: [
-                        { b: "摩根士丹利", d: "2026-09-26", r: "優於大盤", t: 2400 },
-                        { b: "凱基投顧", d: "2026-09-22", r: "增加持股", t: 2320 },
-                        { b: "高盛證券", d: "2026-09-18", r: "買進", t: 2350 },
-                        { b: "統一投顧", d: "2026-09-12", r: "中立", t: 2100 }
-                                ]
-            },
-            {
-                      sym: "2382", name: "廣達", price: 332, tier: "100_500",
-                      reports: [
-                        { b: "花旗球", d: "2026-09-28", r: "買進", t: 440 },
-                        { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 425 },
-                        { b: "高盛證券", d: "2026-09-20", r: "買進", t: 420 },
-                        { b: "富邦投顧", d: "2026-09-14", r: "增加持股", t: 400 },
-                        { b: "永豐投顧", d: "2026-09-08", r: "中立", t: 370 }
-                                ]
-            },
-            {
-                      sym: "2317", name: "鴻海", price: 251, tier: "100_500",
-                      reports: [
-                        { b: "高盛證券", d: "2026-09-28", r: "買進", t: 330 },
-                        { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 320 },
-                        { b: "瑞銀證券", d: "2026-09-22", r: "買進", t: 315 },
-                        { b: "元大投顧", d: "2026-09-18", r: "買進", t: 305 },
-                        { b: "富邦投顧", d: "2026-09-12", r: "增加持股", t: 295 },
-                        { b: "美銀證券", d: "2026-09-06", r: "中立", t: 275 }
-                                ]
-            },
-            {
-                      sym: "2609", name: "陽明", price: 68.5, tier: "BELOW_100",
-                      reports: [
-                        { b: "元大投顧", d: "2026-09-24", r: "買進", t: 88 },
-                        { b: "凱基投顧", d: "2026-09-18", r: "增加持股", t: 85 },
-                        { b: "一投顧", d: "2026-09-12", r: "買進", t: 82 },
-                        { b: "富邦投顧", d: "2026-09-06", r: "中立", t: 75 }
-                                ]
-            }
-                ];
+    function renderPriceFilterButtons() {
+      const container = document.getElementById('price-filters');
+      const filters = [
+        { id: 'ALL', label: '全部價位' },
+        { id: 'BELOW_100', label: '100元以下' },
+        { id: '100_500', label: '100 ~ 500元' },
+        { id: '500_2000', label: '500 ~ 2000元' },
+        { id: 'ABOVE_2000', label: '2000元以上' }
+      ];
+      container.innerHTML = filters.map(f => {
+        const active = currentPriceFilter === f.id;
+        const cls = active ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200';
+        return `<button onclick="setPriceFilter('${f.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold ${cls}">${f.label}</button>`;
+      }).join('');
+    }
 
-          function calcTrimmedMean(targets) {
-                  if (!targets.length) return 0;
-                          if (targets.length < 3) return Math.round(targets.reduce((a, b) => a + b, 0) / targets.length);
-                                  const sorted = [...targets].sort((a, b) => a - b);
-                  const trimmed = sorted.slice(1, -1);
-                  return Math.round(trimmed.reduce((a, b) => a + b, 0) / trimmed.length);
-          }
+    function setPriceFilter(f) {
+      currentPriceFilter = f;
+      renderPriceFilterButtons();
+      renderCards();
+    }
 
-          let currentPriceFilter = 'ALL';
+    function onUpsideChange(val) {
+      currentMinUpside = parseFloat(val) || 0;
+      renderCards();
+    }
 
-          function setPriceFilter(p) {
-                  currentPriceFilter = p;
-                  document.querySelectorAll('.btn-p').forEach(btn => {
-                            if (btn.dataset.p === p) {
-                                        btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm";
-                            } else {
-                                        btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
-                            }
-                  });
-                  render();
-          }
+    function onSearchChange(val) {
+      searchQuery = val.trim();
+      renderCards();
+    }
 
-          function render() {
-                  const minUpside = parseFloat(document.getElementById('upside-filter').value) || 0;
-                  const search = document.getElementById('search-input').value.trim();
-                  const grid = document.getElementById('stock-grid');
-                  grid.innerHTML = '';
+    function renderCards() {
+      const grid = document.getElementById('stock-grid');
+      let list = STOCKS.map(s => {
+        const targets = s.reports.map(r => r.t);
+        const mean = calcTrimmedMean(targets);
+        const upside = parseFloat((((mean - s.price) / s.price) * 100).toFixed(1));
+        return { ...s, mean, upside, count: s.reports.length };
+      });
 
-                  let list = STOCKS.map(s => {
-                            const targets = s.reports.map(r => r.t);
-                            const mean = calcTrimmedMean(targets);
-                            const upside = parseFloat((((mean - s.price) / s.price) * 100).toFixed(1));
-                            return { ...s, mean, upside, count: s.reports.length };
-                  });
+      list = list.filter(s => {
+        const matchPrice = currentPriceFilter === 'ALL' || s.tier === currentPriceFilter;
+        const matchUpside = s.upside >= currentMinUpside;
+        const matchSearch = s.sym.includes(searchQuery) || s.name.includes(searchQuery);
+        return matchPrice && matchUpside && matchSearch;
+      });
 
-                  list = list.filter(s => {
-                            const matchPrice = currentPriceFilter === 'ALL' || s.tier === currentPriceFilter;
-                            const matchUpside = s.upside >= minUpside;
-                            const matchSearch = s.sym.includes(search) || s.name.includes(search);
-                            return matchPrice && matchUpside && matchSearch;
-                  });
+      if (!list.length) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200">查無符合條件之標的</div>';
+        return;
+      }
 
-                  if (!list.length) {
-                            grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200">查無符合條件之標的</div>';
-                            return;
-                  }
-
-                          list.forEach(s => {
-                                    const card = document.createElement('div');
-                                    card.className = "bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between";
-
-                                    const rows = s.reports.map(r => `
-                                              <div class="flex justify-between py-1 border-b border-slate-100 last:border-0 text-xs">
-                                                          <span class="text-slate-600">${r.b} (${r.d})</span>
-                                                                      <div class="space-x-1.5">
-                                                                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">${r.r}</span>
-                                                                                                  <span class="font-bold text-slate-800">NT$ ${r.t}</span>
-                                                                                                              </div>
-                                                                                                                        </div>
-                                                                                                                                `).join('');
-
-                                    card.innerHTML = `
-                                              <div>
-                                                          <div class="flex justify-between items-start mb-3">
-                                                                        <div>
-                                                                                        <div class="flex items-center space-x-2">
-                                                                                                          <span class="text-lg font-bold text-slate-900">${s.name}</span>
-                                                                                                                            <span class="text-xs px-2 py-0.5 bg-slate-100 font-mono text-slate-500 rounded">${s.sym}</span>
-                                                                                                                                            </div>
-                                                                                                                                                            <span class="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1.5 inline-block font-medium">
-                                                                                                                                                                              近30天 ${s.count} 份機構報告
-                                                                                                                                                                                              </span>
-                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                          <div class="text-right">
-                                                                                                                                                                                                                                          <span class="text-[11px] text-slate-400 block">預期潛在漲幅</span>
-                                                                                                                                                                                                                                                          <span class="text-xl font-bold font-mono text-rose-600">+${s.upside}%</span>
-                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-xs">
-                                                                                                                                                                                                                                                                                                              <div><span class="text-slate-400 block">現價 (10/02收盤)</span><b class="text-slate-800 text-sm">NT$ ${s.price}</b></div>
-                                                                                                                                                                                                                                                                                                                            <div><span class="text-slate-400 block">去極值平均目標價</span><b class="text-blue-600 text-sm">NT$ ${s.mean}</b></div>
-                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                                                                                                                                            <div>
-                                                                                                                                                                                                                                                                                                                                                                        <button onclick="toggleDetails('${s.sym}')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition font-medium">
-                                                                                                                                                                                                                                                                                                                                                                                      查看各大券商目標價明細 ▼
-                                                                                                                                                                                                                                                                                                                                                                                                  </button>
-                                                                                                                                                                                                                                                                                                                                                                                                              <div id="details-${s.sym}" class="hidden mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                                                                                                                                                                                                                                                                                                                                                                                                            ${rows}
-                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          `;
-                                    grid.appendChild(card);
-                          });
-          }
-
-          function toggleDetails(sym) {
-                  const el = document.getElementById('details-' + sym);
-                  el.classList.toggle('hidden');
-          }
-
-          render();
-    </script>
-</body>body>
-</html>html>
-                </div>
-            </div></title>="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股法人目標價選股系統</title>
-    <script>
-      const s = document.createElement('script');
-          s.src = 'https://' + 'cdn.' + 'tailwindcss' + '.com';
-          document.head.appendChild(s);
-          const l = document.createElement('link');
-          l.rel = 'stylesheet';
-          l.href = 'https://' + 'fonts.' + 'googleapis' + '.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap';
-          document.head.appendChild(l);
-    </script>
-      <style>
-            body { font-family: 'Noto Sans TC', sans-serif; }
-          </style>
-  </head>
-  <body class="bg-slate-50 min-h-screen text-slate-800 p-4 sm:p-6 lg:p-8">
-      <div class="max-w-6xl mx-auto space-y-6">
-            <header class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                              <h1 class="text-xl font-bold text-slate-900 tracking-tight">📈 台股法人目標價選股器</h1>h1>
-                              <p class="text-xs text-slate-500">剔除最高與最低極端值 · 數據基準日：2026年10月02日收盤</p>p>
-                    </div>
-                    <div class="text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 font-medium">
-                              ● 近 30 券商研究報告共識追蹤
-                    </div>
-            </header>header>
-
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div>
-                              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">價區間：</label>label>
-                              <div class="flex flex-wrap gap-2" id="price-filters">
-                                          <button onclick="setPriceFilter('ALL')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm" data-p="ALL">全部價位</button>button>
-                                          <button onclick="setPriceFilter('BELOW_100')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="BELOW_100">100元以下</button>button>
-                                          <button onclick="setPriceFilter('100_500')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="100_500">100 ~ 500元</button>button>
-                                          <button onclick="setPriceFilter('500_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="500_2000">500 ~ 2000元</button>button>
-                                          <button onclick="setPriceFilter('ABOVE_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="ABOVE_2000">2000元以上</button>button>
-                              </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div class="flex items-center space-x-2">
-                                          <span class="text-xs font-bold text-slate-500">預期漲幅門檻</span>span>
-                                          <select id="upside-filter" onchange="render()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none">
-                                                        <option value="0">不設限 (全部列出)</option>option>
-                                                        <option value="15">15% 以上</option>option>
-                                                        <option value="20" selected>20% 以上 (精選強勢)</option>option>
-                                                        <option value="25">25% 以上</option>option>
-                                          </select>select>
-                              </div>
-
-                              <div class="flex items-center space-x-2">
-                                          <span class="text-xs font-bold text-slate-500">搜尋：</span>span>
-                                          <input id="search-input" oninput="render()" placeholder="代號或名稱 (如 2330 / 聯發科)" class="border border-slate-200 rounded-lg px-3 py-1 text-xs w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-                              </div>
-                    </div>
+      grid.innerHTML = list.map(s => {
+        const rows = s.reports.map(r => `
+          <div class="flex justify-between py-1 border-b border-slate-100 last:border-0 text-xs">
+            <span class="text-slate-600">${r.b} (${r.d})</span>
+            <div class="space-x-1.5">
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">${r.r}</span>
+              <span class="font-bold text-slate-800">NT$ ${r.t}</span>
             </div>
-
-            <div id="stock-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-      </div>
-
-      <script>
-            const STOCKS = [
-              {
-                        sym: "2330", name: "台積電", price: 2500, tier: "ABOVE_2000",
-                        reports: [
-                          { b: "高盛證券", d: "2026-09-28", r: "買進", t: 3200 },
-                          { b: "摩根大通", d: "2026-09-27", r: "加碼", t: 3150 },
-                          { b: "美銀證券", d: "2026-09-25", r: "進", t: 3100 },
-                          { b: "摩根士丹利", d: "2026-09-22", r: "優於大盤", t: 3000 },
-                          { b: "瑞銀證券", d: "2026-09-20", r: "買進", t: 3050 },
-                          { b: "富邦投顧", d: "2026-09-15", r: "增加持股", t: 2950 },
-                          { b: "野村證券", d: "2026-09-10", r: "中立", t: 2750 }
-                                  ]
-              },
-              {
-                        sym: "2454", name: "聯發科", price: 4950, tier: "ABOVE_2000",
-                        reports: [
-                          { b: "瑞銀證券", d: "2026-09-28", r: "買進", t: 6500 },
-                          { b: "高盛證券", d: "2026-09-25", r: "買進", t: 6200 },
-                          { b: "美林證券", d: "2026-09-22", r: "買", t: 6100 },
-                          { b: "摩根士丹", d: "2026-09-18", r: "優於大盤", t: 5900 },
-                          { b: "凱基投顧", d: "2026-09-15", r: "增加持股", t: 5800 },
-                          { b: "統一投顧", d: "2026-09-10", r: "中立", t: 5400 }
-                                  ]
-              },
-              {
-                        sym: "2308", name: "台達電", price: 1885, tier: "500_2000",
-                        reports: [
-                          { b: "摩根士丹利", d: "2026-09-26", r: "優於大盤", t: 2400 },
-                          { b: "凱基投顧", d: "2026-09-22", r: "增加持股", t: 2320 },
-                          { b: "高盛證券", d: "2026-09-18", r: "買進", t: 2350 },
-                          { b: "統一投顧", d: "2026-09-12", r: "中立", t: 2100 }
-                                  ]
-              },
-              {
-                        sym: "2382", name: "廣達", price: 332, tier: "100_500",
-                        reports: [
-                          { b: "花旗環球", d: "2026-09-28", r: "買進", t: 440 },
-                          { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 425 },
-                          { b: "高盛證", d: "2026-09-20", r: "買進", t: 420 },
-                          { b: "富邦投顧", d: "2026-09-14", r: "增加持股", t: 400 },
-                          { b: "永豐投顧", d: "2026-09-08", r: "中立", t: 370 }
-                                  ]
-              },
-              {
-                        sym: "2317", name: "鴻海", price: 251, tier: "100_500",
-                        reports: [
-                          { b: "高盛證券", d: "2026-09-28", r: "買進", t: 330 },
-                          { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 320 },
-                          { b: "瑞銀證券", d: "2026-09-22", r: "買進", t: 315 },
-                          { b: "元大投顧", d: "2026-09-18", r: "買進", t: 305 },
-                          { b: "富邦投顧", d: "2026-09-12", r: "增加持股", t: 295 },
-                          { b: "美銀證", d: "2026-09-06", r: "中立", t: 275 }
-                                  ]
-              },
-              {
-                        sym: "2609", name: "陽明", price: 68.5, tier: "BELOW_100",
-                        reports: [
-                          { b: "元大投", d: "2026-09-24", r: "買進", t: 88 },
-                          { b: "凱基投顧", d: "2026-09-18", r: "增加持股", t: 85 },
-                          { b: "統一投顧", d: "2026-09-12", r: "買進", t: 82 },
-                          { b: "富邦投顧", d: "2026-09-06", r: "中立", t: 75 }
-                                  ]
-              }
-                  ];
-
-            function calcTrimmedMean(targets) {
-                    if (!targets.length) return 0;
-                            if (targets.length < 3) return Math.round(targets.reduce((a, b) => a + b, 0) / targets.length);
-                                    const sorted = [...targets].sort((a, b) => a - b);
-                    const trimmed = sorted.slice(1, -1);
-                    return Math.round(trimmed.reduce((a, b) => a + b, 0) / trimmed.length);
-            }
-
-            let currentPriceFilter = 'ALL';
-
-            function setPriceFilter(p) {
-                    currentPriceFilter = p;
-                    document.querySelectorAll('.btn-p').forEach(btn => {
-                              if (btn.dataset.p === p) {
-                                          btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm";
-                              } else {
-                                          btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
-                              }
-                    });
-                    render();
-            }
-
-            function render() {
-                    const minUpside = parseFloat(document.getElementById('upside-filter').value) || 0;
-                    const search = document.getElementById('search-input').value.trim();
-                    const grid = document.getElementById('stock-grid');
-                    grid.innerHTML = '';
-
-                    let list = STOCKS.map(s => {
-                              const targets = s.reports.map(r => r.t);
-                              const mean = calcTrimmedMean(targets);
-                              const upside = parseFloat((((mean - s.price) / s.price) * 100).toFixed(1));
-                              return { ...s, mean, upside, count: s.reports.length };
-                    });
-
-                    list = list.filter(s => {
-                              const matchPrice = currentPriceFilter === 'ALL' || s.tier === currentPriceFilter;
-                              const matchUpside = s.upside >= minUpside;
-                              const matchSearch = s.sym.includes(search) || s.name.includes(search);
-                              return matchPrice && matchUpside && matchSearch;
-                    });
-
-                    if (!list.length) {
-                              grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200">查無符合條件之標的</div>';
-                              return;
-                    }
-
-                            list.forEach(s => {
-                                      const card = document.createElement('div');
-                                      card.className = "bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between";
-
-                                      const rows = s.reports.map(r => `
-                                                <div class="flex justify-between py-1 border-b border-slate-100 last:border-0 text-xs">
-                                                            <span class="text-slate-600">${r.b} (${r.d})</span>
-                                                                        <div class="space-x-1.5">
-                                                                                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">${r.r}</span>
-                                                                                                    <span class="font-bold text-slate-800">NT$ ${r.t}</span>
-                                                                                                                </div>
-                                                                                                                          </div>
-                                                                                                                                  `).join('');
-
-                                      card.innerHTML = `
-                                                <div>
-                                                            <div class="flex justify-between items-start mb-3">
-                                                                          <div>
-                                                                                          <div class="flex items-center space-x-2">
-                                                                                                            <span class="text-lg font-bold text-slate-900">${s.name}</span>
-                                                                                                                              <span class="text-xs px-2 py-0.5 bg-slate-100 font-mono text-slate-500 rounded">${s.sym}</span>
-                                                                                                                                              </div>
-                                                                                                                                                              <span class="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1.5 inline-block font-medium">
-                                                                                                                                                                                近30天 ${s.count} 份機構報
-                                                                                                                                                                                                </span>
-                                                                                                                                                                                                              </div>
-                                                                                                                                                                                                                            <div class="text-right">
-                                                                                                                                                                                                                                            <span class="text-[11px] text-slate-400 block">預期潛在漲幅</span>
-                                                                                                                                                                                                                                                            <span class="text-xl font-bold font-mono text-rose-600">+${s.upside}%</span>
-                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                      </div>
-                                                                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                                                  <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-xs">
-                                                                                                                                                                                                                                                                                                                <div><span class="text-slate-400 block">現價 (10/02收盤)</span><b class="text-slate-800 text-sm">NT$ ${s.price}</b></div>
-                                                                                                                                                                                                                                                                                                                              <div><span class="text-slate-400 block">去極值平均目標價</span><b class="text-blue-600 text-sm">NT$ ${s.mean}</b></div>
-                                                                                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                                                              <div>
-                                                                                                                                                                                                                                                                                                                                                                          <button onclick="toggleDetails('${s.sym}')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition font-medium">
-                                                                                                                                                                                                                                                                                                                                                                                        查看各大券商目標價明細 ▼
-                                                                                                                                                                                                                                                                                                                                                                                                    </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                <div id="details-${s.sym}" class="hidden mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                                                                                                                                                                                                                                                                                                                                                                                                              ${rows}
-                                                                                                                                                                                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            `;
-                                      grid.appendChild(card);
-                            });
-            }
-
-            function toggleDetails(sym) {
-                    const el = document.getElementById('details-' + sym);
-                    el.classList.toggle('hidden');
-            }
-
-            render();
-      </script>
-  </body>body>
-</html>html>
-                    </div>
-                    </div>
-      </style>DOCTYPE html>
-  <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股法人目標價選系統</title>
-    <script>const s=document.createElement('script');s.src='https://'+'cdn.'+'tailwindcss.'+'com';document.head.appendChild(s);const l=document.createElement('link');l.rel='stylesheet';l.href='https://'+'fonts.'+'googleapis.'+'com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap';document.head.appendChild(l);</script>
-      <style>
-            body { font-family: 'Noto Sans TC', sans-serif; }
-          </style>
-  </head>
-  <body class="bg-slate-50 min-h-screen text-slate-800 p-4 sm:p-6 lg:p-8">
-      <div class="max-w-6xl mx-auto space-y-6">
-            <header class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                              <div class="flex items-center space-x-3">
-                                          <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow-md shadow-blue-500/20">📈</div>
-                                          <div>
-                                                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">台股人目標價選股器</h1>h1>
-                                                        <p class="text-xs text-slate-500">除最高與最低極 · 數基準日：2026年10月02日收盤</p>p>
-                                          </div>
-                              </div>
-                    </div>
-                    <div class="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 font-medium self-start md:self-auto">
-                              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>span>
-                              <span>近 30 天券商研究報告共識追蹤</span>
-                    </div>
-            </header>header>
-      
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">股價區間：</label>label>
-                        <div class="flex flex-wrap gap-2" id="price-filters">
-                                  <button onclick="setPriceFilter('ALL')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm" data-p="ALL">全部價位</button>button>
-                                  <button onclick="setPriceFilter('BELOW_100')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="BELOW_100">100元以下</button>button>
-                                  <button onclick="setPriceFilter('100_500')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="100_500">100 ~ 500元</button>button>
-                                  <button onclick="setPriceFilter('500_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="500_2000">500 ~ 2000元</button>button>
-                                  <button onclick="setPriceFilter('ABOVE_2000')" class="btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200" data-p="ABOVE_2000">2000元以上</button>button>
-                        </div>
-                </div>
-          
-                <div class="pt-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div class="flex items-center space-x-2">
-                                  <span class="text-xs font-bold text-slate-500">預期漲幅門檻：</span>
-                                  <select id="upside-filter" onchange="render()" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-medium focus:outline-none">
-                                              <option value="0">不設限 (全部列出)</option>option>
-                                              <option value="15">15% 以上</option>option>
-                                              <option value="20" selected>20% 以上 (精選強勢)</option>option>
-                                              <option value="25">25% 以上</option>option>
-                                  </select>select>
-                        </div>
-                
-                        <div class="flex items-center space-x-2">
-                                  <span class="text-xs font-bold text-slate-500">搜尋</span>
-                                  <input id="search-input" oninput="render()" placeholder="代號或名稱 (如 2330 / 聯發科)" class="border border-slate-200 rounded-lg px-3 py-1 text-xs w-52 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-                        </div>
-                </div>
           </div>
-      
-          <div id="stock-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-      </div>
-  
-    <script>
-        const STOCKS = [
-          {
-                    sym: "2330", name: "台積電", price: 2500, tier: "ABOVE_2000",
-                    reports: [
-                      { b: "盛證券", d: "2026-09-28", r: "買進", t: 3200 },
-                      { b: "摩根大通", d: "2026-09-27", r: "加碼", t: 3150 },
-                      { b: "美銀證券", d: "2026-09-25", r: "買進", t: 3100 },
-                      { b: "摩根士利", d: "2026-09-22", r: "於大盤", t: 3000 },
-                      { b: "瑞銀證券", d: "2026-09-20", r: "買進", t: 3050 },
-                      { b: "富邦投顧", d: "2026-09-15", r: "增加持股", t: 2950 },
-                      { b: "野村證券", d: "2026-09-10", r: "中立", t: 2750 }
-                              ]
-          },
-          {
-                    sym: "2454", name: "聯發科", price: 4950, tier: "ABOVE_2000",
-                    reports: [
-                      { b: "瑞銀證券", d: "2026-09-28", r: "買進", t: 6500 },
-                      { b: "高盛證", d: "2026-09-25", r: "買進", t: 6200 },
-                      { b: "美林證", d: "2026-09-22", r: "買進", t: 6100 },
-                      { b: "摩士丹利", d: "2026-09-18", r: "優於大盤", t: 5900 },
-                      { b: "凱基投顧", d: "2026-09-15", r: "增加持股", t: 5800 },
-                      { b: "統一投顧", d: "2026-09-10", r: "立", t: 5400 }
-                              ]
-          },
-          {
-                    sym: "2308", name: "台達電", price: 1885, tier: "500_2000",
-                    reports: [
-                      { b: "摩根士丹利", d: "2026-09-26", r: "優大盤", t: 2400 },
-                      { b: "凱基投顧", d: "2026-09-22", r: "增加持股", t: 2320 },
-                      { b: "高盛證券", d: "2026-09-18", r: "買進", t: 2350 },
-                      { b: "統一投顧", d: "2026-09-12", r: "中立", t: 2100 }
-                              ]
-          },
-          {
-                    sym: "2382", name: "廣達", price: 332, tier: "100_500",
-                    reports: [
-                      { b: "花旗環球", d: "2026-09-28", r: "買進", t: 440 },
-                      { b: "摩根士丹利", d: "2026-09-25", r: "優於盤", t: 425 },
-                      { b: "高盛證券", d: "2026-09-20", r: "買進", t: 420 },
-                      { b: "富邦投顧", d: "2026-09-14", r: "增加持股", t: 400 },
-                      { b: "永豐投顧", d: "2026-09-08", r: "中立", t: 370 }
-                              ]
-          },
-          {
-                    sym: "2317", name: "鴻海", price: 251, tier: "100_500",
-                    reports: [
-                      { b: "高盛證券", d: "2026-09-28", r: "買進", t: 330 },
-                      { b: "摩根士丹利", d: "2026-09-25", r: "優於大盤", t: 320 },
-                      { b: "瑞銀證券", d: "2026-09-22", r: "買", t: 315 },
-                      { b: "元大投", d: "2026-09-18", r: "買進", t: 305 },
-                      { b: "富邦投顧", d: "2026-09-12", r: "增加持股", t: 295 },
-                      { b: "美銀證券", d: "2026-09-06", r: "中立", t: 275 }
-                              ]
-          },
-          {
-                    sym: "2609", name: "陽明", price: 68.5, tier: "BELOW_100",
-                    reports: [
-                      { b: "元大投顧", d: "2026-09-24", r: "買進", t: 88 },
-                      { b: "凱基投顧", d: "2026-09-18", r: "增加持股", t: 85 },
-                      { b: "統一投顧", d: "2026-09-12", r: "買進", t: 82 },
-                      { b: "富邦投顧", d: "2026-09-06", r: "中立", t: 75 }
-                              ]
-          }
-              ];
-    
-        function calcTrimmedMean(targets) {
-                if (!targets.length) return 0;
-                        if (targets.length < 3) return Math.round(targets.reduce((a, b) => a + b, 0) / targets.length);
-                                const sorted = [...targets].sort((a, b) => a - b);
-                const trimmed = sorted.slice(1, -1);
-                return Math.round(trimmed.reduce((a, b) => a + b, 0) / trimmed.length);
-        }
-    
-        let currentPriceFilter = 'ALL';
-    
-        function setPriceFilter(p) {
-                currentPriceFilter = p;
-                document.querySelectorAll('.btn-p').forEach(btn => {
-                          if (btn.dataset.p === p) {
-                                      btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white shadow-sm";
-                          } else {
-                                      btn.className = "btn-p px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200";
-                          }
-                });
-                render();
-        }
-    
-        function render() {
-                const minUpside = parseFloat(document.getElementById('upside-filter').value) || 0;
-                const search = document.getElementById('search-input').value.trim();
-                const grid = document.getElementById('stock-grid');
-                grid.innerHTML = '';
-          
-                let list = STOCKS.map(s => {
-                          const targets = s.reports.map(r => r.t);
-                          const mean = calcTrimmedMean(targets);
-                          const upside = parseFloat((((mean - s.price) / s.price) * 100).toFixed(1));
-                          return { ...s, mean, upside, count: s.reports.length };
-                });
-          
-                list = list.filter(s => {
-                          const matchPrice = currentPriceFilter === 'ALL' || s.tier === currentPriceFilter;
-                          const matchUpside = s.upside >= minUpside;
-                          const matchSearch = s.sym.includes(search) || s.name.includes(search);
-                          return matchPrice && matchUpside && matchSearch;
-                });
-          
-                if (!list.length) {
-                          grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-200">查無符合條件之標的</div>';
-                          return;
-                }
-                  
-                        list.forEach(s => {
-                                  const card = document.createElement('div');
-                                  card.className = "bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between";
-                                  
-                                             const rows = s.reports.map(r => `
-                                                       <div class="flex justify-between py-1 border-b border-slate-100 last:border-0 text-xs">
-                                                                   <span class="text-slate-600">${r.b} (${r.d})</span>
-                                                                               <div class="space-x-1.5">
-                                                                                             <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">${r.r}</span>
-                                                                                                           <span class="font-bold text-slate-800">NT$ ${r.t}</span>
-                                                                                                                       </div>
-                                                                                                                                 </div>
-                                                                                                                                         `).join('');
-                          
-                                             card.innerHTML = `
-                                                       <div>
-                                                                   <div class="flex justify-between items-start mb-3">
-                                                                                 <div>
-                                                                                                 <div class="flex items-center space-x-2">
-                                                                                                                   <span class="text-lg font-bold text-slate-900">${s.name}</span>
-                                                                                                                                     <span class="text-xs px-2 py-0.5 bg-slate-100 font-mono text-slate-500 rounded">${s.sym}</span>
-                                                                                                                                                     </div>
-                                                                                                                                                                     <span class="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1.5 inline-block font-medium">
-                                                                                                                                                                                       30天 ${s.count} 份機構報告
-                                                                                                                                                                                                       </span>
-                                                                                                                                                                                                                     </div>
-                                                                                                                                                                                                                                   <div class="text-right">
-                                                                                                                                                                                                                                                   <span class="text-[11px] text-slate-400 block">預期潛在漲幅</span>
-                                                                                                                                                                                                                                                                   <span class="text-xl font-bold font-mono text-rose-600">+${s.upside}%</span>
-                                                                                                                                                                                                                                                                                 </div>
-                                                                                                                                                                                                                                                                                             </div>
-                                                                                                                                                                                                                                                                                             
-                                                                                                                                                                                                                                                                                                         <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-xs">
-                                                                                                                                                                                                                                                                                                                       <div><span class="text-slate-400 block">現價 (10/02收盤)</span><b class="text-slate-800 text-sm">NT$ ${s.price}</b></div>
-                                                                                                                                                                                                                                                                                                                                     <div><span class="text-slate-400 block">去極值平均目標價</span><b class="text-blue-600 text-sm">NT$ ${s.mean}</b></div>
-                                                                                                                                                                                                                                                                                                                                                 </div>
-                                                                                                                                                                                                                                                                                                                                                           </div>
-                                                                                                                                                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                                                                                                                                                     <div>
-                                                                                                                                                                                                                                                                                                                                                                                 <button onclick="toggleDetails('${s.sym}')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition font-medium">
-                                                                                                                                                                                                                                                                                                                                                                                               查看各大券商標價明細 ▼
-                                                                                                                                                                                                                                                                                                                                                                                                           </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                       <div id="details-${s.sym}" class="hidden mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                                                                                                                                                                                                                                                                                                                                                                                                                                     ${rows}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                 </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                           </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                   `;
-                                  grid.appendChild(card);
-                        });
-        }
-    
-        function toggleDetails(sym) {
-                const el = document.getElementById('details-' + sym);
-                el.classList.toggle('hidden');
-        }
-    
-        render();
-    </script>
-  </body>body>
-</html>html></span>
-                                          </div>
-                    </div>
-      </style>ateElement('script');s.src='https://'+'cdn.'+'tailwindcss.'+'com';document.head.appendChild(s);</script>
-  </head>
-<body class="bg-slate-50 p-6 font-sans">
-  <div class="max-w-6xl mx-auto">
-      <header class="mb-6 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+        `).join('');
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
             <div>
-                      <h1 class="text-2xl font-bold text-slate-900">📈 台股法人目標價選股器</h1>h1>
-                      <p class="text-xs text-slate-500 mt-1">剔最高與最低端值 · 據基準日：2026年10月02日盤</p>p>
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg font-bold text-slate-900">${s.name}</span>
+                    <span class="text-xs px-2 py-0.5 bg-slate-100 font-mono text-slate-500 rounded">${s.sym}</span>
+                  </div>
+                  <span class="text-[11px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1.5 inline-block font-medium">
+                    近30天 ${s.count} 份機構報告
+                  </span>
+                </div>
+                <div class="text-right">
+                  <div class="text-[11px] text-slate-400">預期潛在漲幅</div>
+                  <div class="text-xl font-bold font-mono text-rose-600">+${s.upside}%</div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-xs">
+                <div><div class="text-slate-400">現價 (10/02收盤)</div><b class="text-slate-800 text-sm">NT$ ${s.price}</b></div>
+                <div><div class="text-slate-400">去極值平均目標價</div><b class="text-blue-600 text-sm">NT$ ${s.mean}</b></div>
+              </div>
             </div>
-              <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-medium border border-emerald-200">
-                        ● 2026年10月最新行情已校正
-              </span>span>
-      </header>header>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-wrap gap-2 items-center shadow-sm">
-                <span class="text-sm font-semibold text-slate-700 mr-2">股價區間：</span>span>
-                <button onclick="filter('ALL')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white" data-f="ALL">全部</button>button>
-                <button onclick="filter('BELOW_100')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="BELOW_100">100元以下</button>button>
-                <button onclick="filter('100_500')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="100_500">100~500元</button>button>
-                <button onclick="filter('500_2000')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="500_2000">500~2000元</button>button>
-                <button onclick="filter('ABOVE_2000')" class="btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700" data-f="ABOVE_2000">2000元以上</button>button>
-        </div>
+            <div>
+              <button onclick="toggleDetails('${s.sym}')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition font-medium">
+                查看各大券商目標價明細 ▼
+              </button>
+              <div id="details-${s.sym}" class="hidden mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                ${rows}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
-        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-  </div>
+    function toggleDetails(sym) {
+      const el = document.getElementById('details-' + sym);
+      if (el) el.classList.toggle('hidden');
+    }
 
-    <script>
-          const STOCKS = [
-            {sym:"2330", name:"台積電", price:2500, tier:"ABOVE_2000", reports:[
-              {b:"高盛", d:"09-28", r:"買進", t:3200}, {b:"小摩", d:"09-27", r:"加碼", t:3150},
-              {b:"美銀", d:"09-25", r:"買進", t:3100}, {b:"大摩", d:"09-22", r:"優於大盤", t:3000},
-              {b:"邦", d:"09-15", r:"增", t:2950}, {b:"野村", d:"09-10", r:"立", t:2750}
-                    ]},
-            {sym:"2454", name:"聯發科", price:4950, tier:"ABOVE_2000", reports:[
-              {b:"瑞銀", d:"09-28", r:"買進", t:6500}, {b:"高盛", d:"09-25", r:"買進", t:6200},
-              {b:"美林", d:"09-22", r:"買", t:6100}, {b:"大摩", d:"09-18", r:"優於大盤", t:5900},
-              {b:"統一", d:"09-10", r:"中立", t:5400}
-                    ]},
-            {sym:"2308", name:"台達電", price:1885, tier:"500_2000", reports:[
-              {b:"大摩", d:"09-26", r:"優於大盤", t:2400}, {b:"凱基", d:"09-22", r:"增持", t:2320},
-              {b:"高", d:"09-18", r:"買進", t:2350}, {b:"統", d:"09-12", r:"中立", t:2100}
-                    ]},
-            {sym:"2382", name:"廣達", price:332, tier:"100_500", reports:[
-              {b:"花旗", d:"09-28", r:"買進", t:440}, {b:"大摩", d:"09-25", r:"優於大盤", t:425},
-              {b:"高盛", d:"09-20", r:"買進", t:420}, {b:"永豐", d:"09-08", r:"中立", t:370}
-                    ]},
-            {sym:"2317", name:"鴻海", price:251, tier:"100_500", reports:[
-              {b:"高盛", d:"09-28", r:"買進", t:330}, {b:"大摩", d:"09-25", r:"優於大盤", t:320},
-              {b:"瑞銀", d:"09-22", r:"買進", t:315}, {b:"元大", d:"09-18", r:"買進", t:305},
-              {b:"美銀", d:"09-06", r:"中立", t:275}
-                    ]},
-            {sym:"2609", name:"陽明", price:68.5, tier:"BELOW_100", reports:[
-              {b:"元大", d:"09-24", r:"買進", t:88}, {b:"凱基", d:"09-18", r:"增持", t:85},
-              {b:"統一", d:"09-12", r:"買進", t:82}, {b:"富邦", d:"09-06", r:"中立", t:75}
-                    ]}
-                ];
-
-          function calcTarget(r){
-                  const ts = r.map(x=>x.t);
-                  if(ts.length<3) return (ts.reduce((a,b)=>a+b,0)/ts.length).toFixed(0);
-                          return (ts.sort((a,b)=>a-b).slice(1,-1).reduce((a,b)=>a+b,0)/(ts.length-2)).toFixed(0);
-          }
-
-          let curFilter = 'ALL';
-          function filter(f){
-                  curFilter = f;
-                  document.querySelectorAll('.btn').forEach(b => {
-                            b.className = b.dataset.f === f ? 'btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white' : 'btn px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700';
-                  });
-                  render();
-          }
-
-          function render(){
-                  const c = document.getElementById('list');
-                  c.innerHTML = '';
-                  STOCKS.filter(s => curFilter==='ALL' || s.tier===curFilter).forEach(s => {
-                            const target = calcTarget(s.reports);
-                            const upside = (((target - s.price)/s.price)*100).toFixed(1);
-                            const card = document.createElement('div');
-                            card.className = 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm';
-                            card.innerHTML = `
-                                      <div class="flex justify-between items-start mb-3">
-                                                  <div>
-                                                                <span class="text-lg font-bold text-slate-900">${s.name} (${s.sym})</span>
-                                                                              <div class="text-xs text-blue-600 font-medium mt-1">近30天 ${s.reports.length} 份機構報告</div>
-                                                                                          </div>
-                                                                                                      <div class="text-right">
-                                                                                                                    <span class="text-xs text-slate-400 block">預期潛漲幅</span>
-                                                                                                                                  <span class="text-lg font-bold text-rose-600 font-mono">+${upside}%</span>
-                                                                                                                                              </div>
-                                                                                                                                                        </div>
-                                                                                                                                                                  <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl mb-3 text-sm">
-                                                                                                                                                                              <div><span class="text-xs text-slate-400 block">現價 (10/02收盤)</span><b class="text-slate-800">NT$ ${s.price}</b></div>
-                                                                                                                                                                                          <div><span class="text-xs text-slate-400 block">去極值平均目標價</span><b class="text-blue-600">NT$ ${target}</b></div>
-                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                              <button onclick="document.getElementById('r-${s.sym}').classList.toggle('hidden')" class="w-full text-xs text-slate-600 hover:bg-slate-200 py-1.5 bg-slate-100 rounded-lg transition">
-                                                                                                                                                                                                                          查看各大券商目價明細 ▼
-                                                                                                                                                                                                                                    </button>
-                                                                                                                                                                                                                                              <div id="r-${s.sym}" class="hidden mt-2 pt-2 border-t border-slate-100 text-xs space-y-1">
-                                                                                                                                                                                                                                                          ${s.reports.map(x=>`<div class="flex justify-between py-1 text-slate-600"><span>${x.b} (${x.d})</span><span>${x.r} · <strong>NT$ ${x.t}</strong></span></div>`).join('')}
-                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                            `;
-                            c.appendChild(card);
-                  });
-          }
-          render();
-    </script>
-</body>body>
-</html>html>
-            </div></script></title>
-  </head>
+    window.onload = buildLayout;
+  </script>
+</body>
+</html>
